@@ -42,12 +42,14 @@ Don't let unknowns block you. Start from what you understand (business logic, UX
 
 **✓ "Code As If It Works" approach:**
 1. Identify well-understood part (logic/UX/domain)
-2. Start there, write test assuming ideal API
+2. Start there, write ONE test assuming ideal API (use incremental-tdd skill)
 3. Mock collaborators you wish existed
-4. Green? Move to next test
+4. Green? Move to next test (ONE at a time)
 5. Mocks accumulate → define real collaborator
 
 **Result:** Forward progress, discover APIs through usage.
+
+**CRITICAL:** Use the incremental-tdd skill. Write ONE failing test, make it pass, then write the NEXT test. Never write multiple failing tests at once.
 
 ## The Workflow
 
@@ -65,9 +67,11 @@ Don't let unknowns block you. Start from what you understand (business logic, UX
 
 **Don't start from edges (infrastructure, config, database, APIs).**
 
-### 2. Write Test with Wishful Thinking
+### 2. Write ONE Test with Wishful Thinking
 
-Write test as if perfect collaborators exist:
+**IMPORTANT:** Write ONE failing test at a time (incremental-tdd skill). Don't write multiple tests before implementing.
+
+Write ONE test as if perfect collaborators exist:
 
 ```typescript
 test("fetch user profile and cache it", async () => {
@@ -247,8 +251,10 @@ class PaymentProcessor {
 - Choosing tools before knowing requirements
 - Using `import { collaborator }` instead of dependency injection
 - Analysis paralysis from unknowns
+- **Writing multiple failing tests before implementing** (violates incremental-tdd)
+- **Creating full test file structure before writing first test** (batch testing)
 
-**All of these mean: Write one wishful test NOW from where the feature is USED.**
+**All of these mean: Write ONE wishful test NOW from where the feature is USED, make it pass, then write the NEXT test.**
 
 ## The Bottom Line
 
