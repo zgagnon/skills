@@ -23,7 +23,10 @@
       "Bash(bd dep:*)",
       "Bash(jj diff:*)",
       "Read(//Users/zell/.emacs.d/.local/**)",
-      "Read(//Users/zell/.claude/plugins/marketplaces/superpowers-dev/skills/jj-change-workflow/**)"
+      "Read(//Users/zell/.claude/plugins/marketplaces/superpowers-dev/skills/jj-change-workflow/**)",
+      "Bash(bd ready:*)",
+      "Skill(wishful-thinking-programming)",
+      "Bash(bd epic:*)"
     ],
     "deny": [],
     "ask": []

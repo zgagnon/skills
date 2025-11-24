@@ -6,15 +6,17 @@
 
 import {
   setWorkspaceImpl,
-  createIssueImpl,
+  createTaskImpl,
+  getDependencyTreeImpl,
+  drawTreeImpl,
 } from "./beads-impl.js";
 
 /**
  * Type definitions
  */
 
-export type IssueType = "bug" | "feature" | "task" | "epic" | "chore";
-export type IssueStatus = "open" | "in_progress" | "blocked" | "closed";
+export type TaskType = "bug" | "feature" | "task" | "epic" | "chore";
+export type TaskStatus = "open" | "in_progress" | "blocked" | "closed";
 
 export interface SetWorkspaceInput {
   workspacePath: string;
@@ -24,22 +26,30 @@ export interface WorkspaceStatus {
   workspacePath: string;
 }
 
-export interface CreateIssueInput {
+export interface CreateTaskInput {
   title: string;
-  type?: IssueType;
+  type?: TaskType;
   priority?: number;
   description?: string;
 }
 
-export interface Issue {
+export interface Task {
   id: string;
   title: string;
   description: string;
-  status: IssueStatus;
+  status: TaskStatus;
   priority: number;
-  issueType: IssueType;
+  taskType: TaskType;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface GetDependencyTreeInput {
+  taskId: string;
+}
+
+export interface DrawTreeInput {
+  taskId: string;
 }
 
 /**
@@ -57,13 +67,49 @@ export const setWorkspace = async (
 };
 
 /**
- * Create a new issue
+ * Create a new task
  *
- * Creates a new issue (task, bug, feature, epic, or chore) with the specified details.
+ * Creates a new task (task, bug, feature, epic, or chore) with the specified details.
  *
- * @param input - Issue configuration with title, type, priority, description
- * @returns Created issue with ID and details
+ * @param input - Task configuration with title, type, priority, description
+ * @returns Created task with ID and details
  */
-export const createIssue = async (input: CreateIssueInput): Promise<Issue> => {
-  return createIssueImpl(input);
+export const createTask = async (input: CreateTaskInput): Promise<Task> => {
+  return createTaskImpl(input);
+};
+
+/**
+ * Get dependency tree for a task
+ *
+ * Returns bottom-up view: task → parent → grandparent → root
+ *
+ * @param input - Task ID to get tree for
+ * @returns Array of tasks from current to root
+ */
+export const getDependencyTree = async (input: GetDependencyTreeInput): Promise<Task[]> => {
+  return getDependencyTreeImpl(input);
+};
+
+/**
+ * Draw a visual tree representation
+ *
+ * Returns top-down view: epic → children → grandchildren, formatted with tree characters (⎿)
+ * and indenting for hierarchy levels.
+ *
+ * IMPORTANT: Display the returned string to the user so they can see the tree visualization.
+ *
+ * @param input - Task ID to draw tree for
+ * @returns Formatted string with tree visualization - display this output to the user
+ *
+ * @example
+ * const tree = await drawTree({ taskId: 'epic-123' });
+ * console.log(tree);
+ * // Output:
+ * // Epic Title
+ * // ⎿ Child Task 1
+ * // ⎿ Child Task 2
+ * //   ⎿ Grandchild Task
+ */
+export const drawTree = async (input: DrawTreeInput): Promise<string> => {
+  return drawTreeImpl(input);
 };
