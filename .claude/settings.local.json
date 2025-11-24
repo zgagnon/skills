@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_beads_beads__set_context",
+      "Bash(bd create:*)",
+      "Bash(bd show:*)",
+      "Bash(bd update:*)",
+      "Skill(incremental-tdd)",
+      "Bash(bun test:*)",
+      "Skill(adr-review)",
+      "Bash(bd list:*)",
+      "Bash(timeout 10 bun test:*)",
+      "Skill(sharpening-the-knife)",
+      "Skill(superpowers:writing-skills)",
+      "Skill(superpowers:jj-change-workflow)",
+      "Bash(jj root:*)",
+      "Bash(jj status:*)",
+      "Bash(jj new:*)",
+      "Bash(jj commit:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
