@@ -16,7 +16,14 @@
       "Bash(jj root:*)",
       "Bash(jj status:*)",
       "Bash(jj new:*)",
-      "Bash(jj commit:*)"
+      "Bash(jj commit:*)",
+      "Bash(jj log:*)",
+      "Bash(bun:*)",
+      "Skill(using-jj)",
+      "Bash(bd dep:*)",
+      "Bash(jj diff:*)",
+      "Read(//Users/zell/.emacs.d/.local/**)",
+      "Read(//Users/zell/.claude/plugins/marketplaces/superpowers-dev/skills/jj-change-workflow/**)"
     ],
     "deny": [],
     "ask": []
