@@ -12,6 +12,7 @@ import {
   closeTaskImpl,
   getEpicStatusImpl,
   findReadyTasksImpl,
+  updateTaskImpl,
 } from "./beads-impl.js";
 
 /**
@@ -76,6 +77,14 @@ export interface EpicStatus {
 
 export interface FindReadyTasksInput {
   limit?: number;
+}
+
+export interface UpdateTaskInput {
+  taskId: string;
+  status?: TaskStatus;
+  notes?: string;
+  description?: string;
+  title?: string;
 }
 
 /**
@@ -174,4 +183,16 @@ export const getEpicStatus = async (input: EpicStatusInput): Promise<EpicStatus>
  */
 export const findReadyTasks = async (input: FindReadyTasksInput): Promise<Task[]> => {
   return findReadyTasksImpl(input);
+};
+
+/**
+ * Update a task's properties
+ *
+ * Updates task status, notes, description, or title.
+ *
+ * @param input - Task ID and fields to update
+ * @returns void
+ */
+export const updateTask = async (input: UpdateTaskInput): Promise<void> => {
+  return updateTaskImpl(input);
 };

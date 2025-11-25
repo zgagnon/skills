@@ -183,6 +183,42 @@ export const closeTaskImpl = async (input: { taskId: string; reason?: string }):
   }
 };
 
+export const updateTaskImpl = async (input: {
+  taskId: string;
+  status?: string;
+  notes?: string;
+  description?: string;
+  title?: string;
+}): Promise<void> => {
+  if (!currentWorkspacePath) {
+    throw new Error("No workspace set - call setWorkspace first");
+  }
+
+  try {
+    // If no updates specified, do nothing
+    if (!input.status && !input.notes && !input.description && !input.title) {
+      return;
+    }
+
+    // Call bd update separately for each field - simpler and handles spaces correctly
+    if (input.status) {
+      await $`cd ${currentWorkspacePath} && bd update ${input.taskId} --status ${input.status}`.quiet();
+    }
+    if (input.notes) {
+      await $`cd ${currentWorkspacePath} && bd update ${input.taskId} --notes ${input.notes}`.quiet();
+    }
+    if (input.description) {
+      await $`cd ${currentWorkspacePath} && bd update ${input.taskId} --description ${input.description}`.quiet();
+    }
+    if (input.title) {
+      await $`cd ${currentWorkspacePath} && bd update ${input.taskId} --title ${input.title}`.quiet();
+    }
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to update task: ${errorMsg}`);
+  }
+};
+
 export const findReadyTasksImpl = async (input: { limit?: number }): Promise<any[]> => {
   if (!currentWorkspacePath) {
     throw new Error("No workspace set - call setWorkspace first");

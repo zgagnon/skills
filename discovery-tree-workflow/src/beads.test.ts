@@ -426,4 +426,67 @@ describe("beads API", () => {
       });
     });
   });
+
+  describe("updateTask", () => {
+    describe("when updating only status", () => {
+      test("changes task status in BD", async () => {
+        await withBD(async (workspace) => {
+          await beads.setWorkspace({ workspacePath: workspace });
+
+          const task = await beads.createTask({
+            title: "Task to update",
+            type: "task",
+            priority: 2,
+          });
+
+          // Verify initial status
+          expect(task.status).toBe("open");
+
+          // Wishful thinking: update status
+          await beads.updateTask({
+            taskId: task.id,
+            status: "in_progress",
+          });
+
+          // THEN: Status is updated in BD
+          const result = await $`cd ${workspace} && bd show ${task.id} --json`.text();
+          const taskArray = JSON.parse(result);
+          const updatedTask = taskArray[0];
+
+          expect(updatedTask.status).toBe("in_progress");
+        });
+      });
+    });
+
+    describe("when updating multiple fields", () => {
+      test("updates all specified fields", async () => {
+        await withBD(async (workspace) => {
+          await beads.setWorkspace({ workspacePath: workspace });
+
+          const task = await beads.createTask({
+            title: "Original title",
+            type: "task",
+            priority: 2,
+          });
+
+          // Update multiple fields
+          await beads.updateTask({
+            taskId: task.id,
+            title: "Updated title",
+            description: "New description",
+            notes: "Some notes",
+          });
+
+          // THEN: All fields are updated
+          const result = await $`cd ${workspace} && bd show ${task.id} --json`.text();
+          const taskArray = JSON.parse(result);
+          const updatedTask = taskArray[0];
+
+          expect(updatedTask.title).toBe("Updated title");
+          expect(updatedTask.description).toBe("New description");
+          expect(updatedTask.notes).toBe("Some notes");
+        });
+      });
+    });
+  });
 });
