@@ -183,6 +183,40 @@ export const closeTaskImpl = async (input: { taskId: string; reason?: string }):
   }
 };
 
+export const findReadyTasksImpl = async (input: { limit?: number }): Promise<any[]> => {
+  if (!currentWorkspacePath) {
+    throw new Error("No workspace set - call setWorkspace first");
+  }
+
+  try {
+    // Call bd ready with optional limit
+    let result;
+    if (input.limit) {
+      result = await $`cd ${currentWorkspacePath} && bd ready --limit ${input.limit} --json`.text();
+    } else {
+      result = await $`cd ${currentWorkspacePath} && bd ready --json`.text();
+    }
+
+    // Parse JSON output - bd ready returns array of tasks
+    const tasks = JSON.parse(result);
+
+    // Map to Task interface
+    return tasks.map((taskData: any) => ({
+      id: taskData.id,
+      title: taskData.title,
+      description: taskData.description || "",
+      status: taskData.status,
+      priority: taskData.priority,
+      taskType: taskData.issue_type,
+      createdAt: taskData.created_at,
+      updatedAt: taskData.updated_at,
+    }));
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to find ready tasks: ${errorMsg}`);
+  }
+};
+
 export const getEpicStatusImpl = async (input: { epicId: string }): Promise<any> => {
   if (!currentWorkspacePath) {
     throw new Error("No workspace set - call setWorkspace first");

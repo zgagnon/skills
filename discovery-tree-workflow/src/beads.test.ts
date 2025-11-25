@@ -402,4 +402,28 @@ describe("beads API", () => {
       });
     });
   });
+
+  describe("findReadyTasks", () => {
+    describe("when there is one task with no dependencies", () => {
+      test("returns array with that task", async () => {
+        await withBD(async (workspace) => {
+          await beads.setWorkspace({ workspacePath: workspace });
+
+          const task = await beads.createTask({
+            title: "Ready task",
+            type: "task",
+            priority: 2,
+          });
+
+          // Wishful thinking: find ready tasks
+          const readyTasks = await beads.findReadyTasks({});
+
+          // THEN: Returns the task
+          expect(readyTasks).toHaveLength(1);
+          expect(readyTasks[0].id).toBe(task.id);
+          expect(readyTasks[0].title).toBe("Ready task");
+        });
+      });
+    });
+  });
 });

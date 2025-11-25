@@ -11,6 +11,7 @@ import {
   drawTreeImpl,
   closeTaskImpl,
   getEpicStatusImpl,
+  findReadyTasksImpl,
 } from "./beads-impl.js";
 
 /**
@@ -71,6 +72,10 @@ export interface EpicStatus {
   blockedTasks: number;
   openTasks: number;
   completionPercentage: number;
+}
+
+export interface FindReadyTasksInput {
+  limit?: number;
 }
 
 /**
@@ -157,4 +162,16 @@ export const closeTask = async (input: CloseTaskInput): Promise<void> => {
  */
 export const getEpicStatus = async (input: EpicStatusInput): Promise<EpicStatus> => {
   return getEpicStatusImpl(input);
+};
+
+/**
+ * Find ready tasks with no blockers
+ *
+ * Returns tasks that have no blocking dependencies and are ready to work on.
+ *
+ * @param input - Optional filter options (limit)
+ * @returns Array of ready tasks
+ */
+export const findReadyTasks = async (input: FindReadyTasksInput): Promise<Task[]> => {
+  return findReadyTasksImpl(input);
 };
