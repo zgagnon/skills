@@ -9,6 +9,8 @@ import {
   createTaskImpl,
   getDependencyTreeImpl,
   drawTreeImpl,
+  closeTaskImpl,
+  getEpicStatusImpl,
 } from "./beads-impl.js";
 
 /**
@@ -50,6 +52,25 @@ export interface GetDependencyTreeInput {
 
 export interface DrawTreeInput {
   taskId: string;
+}
+
+export interface CloseTaskInput {
+  taskId: string;
+  reason?: string;
+}
+
+export interface EpicStatusInput {
+  epicId: string;
+}
+
+export interface EpicStatus {
+  epicId: string;
+  totalTasks: number;
+  completedTasks: number;
+  inProgressTasks: number;
+  blockedTasks: number;
+  openTasks: number;
+  completionPercentage: number;
 }
 
 /**
@@ -112,4 +133,28 @@ export const getDependencyTree = async (input: GetDependencyTreeInput): Promise<
  */
 export const drawTree = async (input: DrawTreeInput): Promise<string> => {
   return drawTreeImpl(input);
+};
+
+/**
+ * Close a task
+ *
+ * Marks a task as closed (completed) in the beads database.
+ *
+ * @param input - Task ID and optional reason for closing
+ * @returns void
+ */
+export const closeTask = async (input: CloseTaskInput): Promise<void> => {
+  return closeTaskImpl(input);
+};
+
+/**
+ * Get epic status and completion progress
+ *
+ * Recursively counts all descendant tasks and calculates completion statistics.
+ *
+ * @param input - Epic ID to get status for
+ * @returns Epic status with task counts and completion percentage
+ */
+export const getEpicStatus = async (input: EpicStatusInput): Promise<EpicStatus> => {
+  return getEpicStatusImpl(input);
 };

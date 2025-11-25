@@ -149,3 +149,84 @@ export const drawTreeImpl = async (input: { taskId: string }): Promise<string> =
     throw new Error(`Failed to draw tree: ${errorMsg}`);
   }
 };
+
+export const closeTaskImpl = async (input: { taskId: string; reason?: string }): Promise<void> => {
+  if (!currentWorkspacePath) {
+    throw new Error("No workspace set - call setWorkspace first");
+  }
+
+  try {
+    // Call bd update with status closed
+    if (input.reason) {
+      await $`cd ${currentWorkspacePath} && bd update ${input.taskId} --status closed --notes ${input.reason}`.quiet();
+    } else {
+      await $`cd ${currentWorkspacePath} && bd update ${input.taskId} --status closed`.quiet();
+    }
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to close task: ${errorMsg}`);
+  }
+};
+
+export const getEpicStatusImpl = async (input: { epicId: string }): Promise<any> => {
+  if (!currentWorkspacePath) {
+    throw new Error("No workspace set - call setWorkspace first");
+  }
+
+  try {
+    // Get epic details
+    const result = await $`cd ${currentWorkspacePath} && bd show ${input.epicId} --json`.text();
+    const taskArray = JSON.parse(result);
+    const epicData = taskArray[0];
+
+    // Initialize counters
+    let totalTasks = 0;
+    let completedTasks = 0;
+    let inProgressTasks = 0;
+    let blockedTasks = 0;
+    let openTasks = 0;
+
+    // Count children by status
+    if (epicData.dependents && epicData.dependents.length > 0) {
+      for (const dep of epicData.dependents) {
+        // Only count parent-child relationships
+        if (dep.dependency_type === "parent-child") {
+          totalTasks++;
+
+          switch (dep.status) {
+            case "closed":
+              completedTasks++;
+              break;
+            case "in_progress":
+              inProgressTasks++;
+              break;
+            case "blocked":
+              blockedTasks++;
+              break;
+            case "open":
+              openTasks++;
+              break;
+          }
+        }
+      }
+    }
+
+    // Calculate completion percentage
+    const completionPercentage = totalTasks > 0
+      ? Math.round((completedTasks / totalTasks) * 100)
+      : 0;
+
+    return {
+      epicId: input.epicId,
+      totalTasks,
+      completedTasks,
+      inProgressTasks,
+      blockedTasks,
+      openTasks,
+      completionPercentage,
+    };
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to get epic status: ${errorMsg}`);
+  }
+};

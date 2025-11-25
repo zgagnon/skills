@@ -237,4 +237,129 @@ describe("beads API", () => {
       });
     });
   });
+
+  describe("closeTask", () => {
+    describe("when closing task without reason", () => {
+      test("marks task as closed and updates status in BD", async () => {
+        await withBD(async (workspace) => {
+          await beads.setWorkspace({ workspacePath: workspace });
+
+          const task = await beads.createTask({
+            title: "Task to close",
+            type: "task",
+            priority: 2,
+          });
+
+          // Wishful thinking: close the task
+          await beads.closeTask({ taskId: task.id });
+
+          // THEN: Task is closed in BD
+          const result = await $`cd ${workspace} && bd show ${task.id} --json`.text();
+          const taskArray = JSON.parse(result);
+          const closedTask = taskArray[0];
+
+          expect(closedTask.status).toBe("closed");
+          expect(closedTask.id).toBe(task.id);
+        });
+      });
+    });
+
+    describe("when closing task with reason", () => {
+      test("marks task as closed and adds reason to notes", async () => {
+        await withBD(async (workspace) => {
+          await beads.setWorkspace({ workspacePath: workspace });
+
+          const task = await beads.createTask({
+            title: "Task to close with reason",
+            type: "task",
+            priority: 2,
+          });
+
+          // Wishful thinking: close with reason
+          await beads.closeTask({
+            taskId: task.id,
+            reason: "Completed successfully"
+          });
+
+          // THEN: Task is closed and has the reason in notes
+          const result = await $`cd ${workspace} && bd show ${task.id} --json`.text();
+          const taskArray = JSON.parse(result);
+          const closedTask = taskArray[0];
+
+          expect(closedTask.status).toBe("closed");
+          expect(closedTask.notes).toBe("Completed successfully");
+        });
+      });
+    });
+  });
+
+  describe("getEpicStatus", () => {
+    describe("when epic has no children", () => {
+      test("returns zero counts and 0% completion", async () => {
+        await withBD(async (workspace) => {
+          await beads.setWorkspace({ workspacePath: workspace });
+
+          const epic = await beads.createTask({
+            title: "Empty Epic",
+            type: "epic",
+            priority: 1,
+          });
+
+          // Wishful thinking: get epic status
+          const status = await beads.getEpicStatus({ epicId: epic.id });
+
+          // THEN: All counts are zero
+          expect(status.epicId).toBe(epic.id);
+          expect(status.totalTasks).toBe(0);
+          expect(status.completedTasks).toBe(0);
+          expect(status.inProgressTasks).toBe(0);
+          expect(status.blockedTasks).toBe(0);
+          expect(status.openTasks).toBe(0);
+          expect(status.completionPercentage).toBe(0);
+        });
+      });
+    });
+
+    describe("when epic has children with various statuses", () => {
+      test("counts tasks by status and calculates completion percentage", async () => {
+        await withBD(async (workspace) => {
+          await beads.setWorkspace({ workspacePath: workspace });
+
+          const epic = await beads.createTask({
+            title: "Test Epic",
+            type: "epic",
+            priority: 1,
+          });
+
+          // Create tasks with different statuses
+          const task1 = await beads.createTask({ title: "Task 1", type: "task", priority: 2 });
+          const task2 = await beads.createTask({ title: "Task 2", type: "task", priority: 2 });
+          const task3 = await beads.createTask({ title: "Task 3", type: "task", priority: 2 });
+          const task4 = await beads.createTask({ title: "Task 4", type: "task", priority: 2 });
+
+          // Add all as children of epic
+          await $`cd ${workspace} && bd dep add ${task1.id} ${epic.id} --type parent-child`.quiet();
+          await $`cd ${workspace} && bd dep add ${task2.id} ${epic.id} --type parent-child`.quiet();
+          await $`cd ${workspace} && bd dep add ${task3.id} ${epic.id} --type parent-child`.quiet();
+          await $`cd ${workspace} && bd dep add ${task4.id} ${epic.id} --type parent-child`.quiet();
+
+          // Set different statuses: 1 closed, 1 in_progress, 2 open
+          await $`cd ${workspace} && bd update ${task1.id} --status closed`.quiet();
+          await $`cd ${workspace} && bd update ${task2.id} --status in_progress`.quiet();
+          // task3 and task4 stay open
+
+          // Get epic status
+          const status = await beads.getEpicStatus({ epicId: epic.id });
+
+          // THEN: Counts are correct
+          expect(status.totalTasks).toBe(4);
+          expect(status.completedTasks).toBe(1);
+          expect(status.inProgressTasks).toBe(1);
+          expect(status.openTasks).toBe(2);
+          expect(status.blockedTasks).toBe(0);
+          expect(status.completionPercentage).toBe(25); // 1/4 = 25%
+        });
+      });
+    });
+  });
 });
