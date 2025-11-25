@@ -108,6 +108,20 @@ export const getDependencyTreeImpl = async (input: GetDependencyTreeInput): Prom
   }
 };
 
+const getStatusEmoji = (status: string): string => {
+  switch (status) {
+    case "closed":
+      return "✓";
+    case "in_progress":
+      return "⚙";
+    case "blocked":
+      return "⛔";
+    case "open":
+    default:
+      return "○";
+  }
+};
+
 const drawTreeRecursive = async (
   taskId: string,
   indent: string = ""
@@ -117,8 +131,9 @@ const drawTreeRecursive = async (
   const taskArray = JSON.parse(result);
   const taskData = taskArray[0];
 
-  // Start with current task title
-  let output = taskData.title;
+  // Get status emoji and prepend to title
+  const emoji = getStatusEmoji(taskData.status);
+  let output = `${emoji} ${taskData.title}`;
 
   // Check for children (dependents with parent-child relationship)
   if (taskData.dependents && taskData.dependents.length > 0) {

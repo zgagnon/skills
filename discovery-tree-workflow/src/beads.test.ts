@@ -162,8 +162,8 @@ describe("beads API", () => {
           // Wishful thinking: draw tree as string
           const drawing = await beads.drawTree({ taskId: task.id });
 
-          // THEN: Returns formatted string with agent instruction and task
-          expect(drawing).toBe("[AGENT: Display this complete tree to the user in your response]\n\nLeaf task");
+          // THEN: Returns formatted string with agent instruction and task (with status emoji)
+          expect(drawing).toBe("[AGENT: Display this complete tree to the user in your response]\n\n○ Leaf task");
         });
       });
     });
@@ -192,8 +192,8 @@ describe("beads API", () => {
           // Wishful thinking: draw tree top-down with formatting
           const drawing = await beads.drawTree({ taskId: epic.id });
 
-          // THEN: Returns formatted tree with indenting and tree character
-          const expected = "[AGENT: Display this complete tree to the user in your response]\n\nParent Epic\n⎿ Child Task";
+          // THEN: Returns formatted tree with indenting and tree character (with status emojis)
+          const expected = "[AGENT: Display this complete tree to the user in your response]\n\n○ Parent Epic\n⎿ ○ Child Task";
           expect(drawing).toBe(expected);
         });
       });
@@ -230,9 +230,49 @@ describe("beads API", () => {
           // Wishful thinking: draw tree from epic showing full hierarchy
           const drawing = await beads.drawTree({ taskId: epic.id });
 
-          // THEN: Returns tree with nested indenting
-          const expected = "[AGENT: Display this complete tree to the user in your response]\n\nEpic\n⎿ Task\n  ⎿ Subtask";
+          // THEN: Returns tree with nested indenting (with status emojis)
+          const expected = "[AGENT: Display this complete tree to the user in your response]\n\n○ Epic\n⎿ ○ Task\n  ⎿ ○ Subtask";
           expect(drawing).toBe(expected);
+        });
+      });
+    });
+
+    describe("when tasks have different statuses", () => {
+      test("shows status emojis for each task", async () => {
+        await withBD(async (workspace) => {
+          await beads.setWorkspace({ workspacePath: workspace });
+
+          const epic = await beads.createTask({
+            title: "Epic",
+            type: "epic",
+            priority: 1,
+          });
+
+          const openTask = await beads.createTask({
+            title: "Open Task",
+            type: "task",
+            priority: 2,
+          });
+
+          const closedTask = await beads.createTask({
+            title: "Closed Task",
+            type: "task",
+            priority: 2,
+          });
+
+          // Add as children
+          await $`cd ${workspace} && bd dep add ${openTask.id} ${epic.id} --type parent-child`.quiet();
+          await $`cd ${workspace} && bd dep add ${closedTask.id} ${epic.id} --type parent-child`.quiet();
+
+          // Close one task
+          await beads.closeTask({ taskId: closedTask.id });
+
+          // Draw tree
+          const drawing = await beads.drawTree({ taskId: epic.id });
+
+          // THEN: Status emojis appear
+          expect(drawing).toContain("○ Open Task");
+          expect(drawing).toContain("✓ Closed Task");
         });
       });
     });
