@@ -14,6 +14,7 @@ import {
   findReadyTasksImpl,
   updateTaskImpl,
   showTaskImpl,
+  addDependencyImpl,
 } from "./beads-impl.js";
 
 /**
@@ -22,6 +23,7 @@ import {
 
 export type TaskType = "bug" | "feature" | "task" | "epic" | "chore";
 export type TaskStatus = "open" | "in_progress" | "blocked" | "closed";
+export type DependencyType = "parent-child" | "blocks" | "related" | "discovered-from";
 
 export interface SetWorkspaceInput {
   workspacePath: string;
@@ -90,6 +92,12 @@ export interface UpdateTaskInput {
 
 export interface ShowTaskInput {
   taskId: string;
+}
+
+export interface AddDependencyInput {
+  taskId: string;
+  dependsOnId: string;
+  type: DependencyType;
 }
 
 /**
@@ -212,4 +220,17 @@ export const updateTask = async (input: UpdateTaskInput): Promise<void> => {
  */
 export const showTask = async (input: ShowTaskInput): Promise<Task> => {
   return showTaskImpl(input);
+};
+
+/**
+ * Add a dependency between tasks
+ *
+ * Creates a dependency link between two tasks with specified type
+ * (parent-child, blocks, related, discovered-from).
+ *
+ * @param input - Task IDs and dependency type
+ * @returns void
+ */
+export const addDependency = async (input: AddDependencyInput): Promise<void> => {
+  return addDependencyImpl(input);
 };

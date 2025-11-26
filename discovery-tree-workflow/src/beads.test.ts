@@ -517,4 +517,44 @@ describe("beads API", () => {
       });
     });
   });
+
+  describe("addDependency", () => {
+    describe("when adding parent-child dependency", () => {
+      test("creates dependency link between tasks", async () => {
+        await withBD(async (workspace) => {
+          await beads.setWorkspace({ workspacePath: workspace });
+
+          // Create two tasks
+          const parent = await beads.createTask({
+            title: "Parent task",
+            type: "epic",
+            priority: 1,
+          });
+
+          const child = await beads.createTask({
+            title: "Child task",
+            type: "task",
+            priority: 2,
+          });
+
+          // Wishful thinking: add parent-child dependency
+          await beads.addDependency({
+            taskId: child.id,
+            dependsOnId: parent.id,
+            type: "parent-child",
+          });
+
+          // THEN: Dependency is created in BD
+          const result = await $`cd ${workspace} && bd show ${child.id} --json`.text();
+          const taskArray = JSON.parse(result);
+          const childTask = taskArray[0];
+
+          expect(childTask.dependencies).toBeDefined();
+          expect(childTask.dependencies.length).toBeGreaterThan(0);
+          expect(childTask.dependencies[0].id).toBe(parent.id);
+          expect(childTask.dependencies[0].dependency_type).toBe("parent-child");
+        });
+      });
+    });
+  });
 });

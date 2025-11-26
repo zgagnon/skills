@@ -343,3 +343,21 @@ export const showTaskImpl = async (input: { taskId: string }): Promise<any> => {
     throw new Error(`Failed to show task: ${errorMsg}`);
   }
 };
+
+export const addDependencyImpl = async (input: {
+  taskId: string;
+  dependsOnId: string;
+  type: string;
+}): Promise<void> => {
+  if (!currentWorkspacePath) {
+    throw new Error("No workspace set - call setWorkspace first");
+  }
+
+  try {
+    // Call bd dep add to create dependency
+    await $`cd ${currentWorkspacePath} && bd dep add ${input.taskId} ${input.dependsOnId} --type ${input.type}`.quiet();
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to add dependency: ${errorMsg}`);
+  }
+};
