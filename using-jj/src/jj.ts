@@ -23,6 +23,8 @@ import {
   checkpointImpl,
   finishTaskImpl,
   describeImpl,
+  logImpl,
+  showImpl,
 } from "./jj-impl.js";
 
 /**
@@ -59,6 +61,25 @@ export interface CheckpointInput {
 
 export interface DescribeInput {
   description: string;
+}
+
+export interface LogInput {
+  limit?: number;
+}
+
+export interface LogEntry {
+  changeId: string;
+  description: string;
+}
+
+export interface ShowInput {
+  revision?: string;
+}
+
+export interface ShowResult {
+  changeId: string;
+  description: string;
+  diff: string;
 }
 
 /**
@@ -159,4 +180,30 @@ export const finishTask = async (): Promise<void> => {
  */
 export const describe = async (input: DescribeInput): Promise<void> => {
   return describeImpl(input);
+};
+
+/**
+ * Get change history log
+ *
+ * Returns a list of changes from the repository.
+ *
+ * @param input - Log configuration with optional limit
+ * @returns Array of log entries with changeId and description
+ * @throws Error if no repository is set
+ */
+export const log = async (input: LogInput): Promise<LogEntry[]> => {
+  return logImpl(input);
+};
+
+/**
+ * Show change details
+ *
+ * Returns detailed information about a change including its diff.
+ *
+ * @param input - Show configuration with optional revision (defaults to @)
+ * @returns Change details with changeId, description, and diff
+ * @throws Error if no repository is set
+ */
+export const show = async (input: ShowInput): Promise<ShowResult> => {
+  return showImpl(input);
 };

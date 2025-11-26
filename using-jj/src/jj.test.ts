@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { setRepository, getChangedFiles, getContext, cleanup, startTask, checkpoint, finishTask, describe as describeChange } from "./jj.js";
+import { setRepository, getChangedFiles, getContext, cleanup, startTask, checkpoint, finishTask, describe as describeChange, log, show } from "./jj.js";
 import { withJJ } from "./test-helpers.js";
 import { resolve } from "node:path";
 import { mkdirSync, rmSync } from "fs";
@@ -430,6 +430,44 @@ describe("describe", () => {
           { encoding: "utf8" }
         ).trim();
         expect(currentDesc).toBe("New description");
+      });
+    });
+  });
+});
+
+describe("log", () => {
+  describe("when repository is set", () => {
+    test("returns array of changes", async () => {
+      await withJJ(async (repoPath) => {
+        // GIVEN: Repository with described change
+        await describeChange({ description: "Test change" });
+
+        // WHEN: Get log
+        const changes = await log({ limit: 5 });
+
+        // THEN: Returns array with changes
+        expect(Array.isArray(changes)).toBe(true);
+        expect(changes.length).toBeGreaterThan(0);
+      });
+    });
+  });
+});
+
+describe("show", () => {
+  describe("when repository is set", () => {
+    test("returns change details with diff", async () => {
+      await withJJ(async (repoPath) => {
+        // GIVEN: Repository with a change that has files
+        await describeChange({ description: "Test change" });
+        execSync(`touch "${repoPath}/test-file.txt"`, { encoding: "utf8" });
+
+        // WHEN: Show current change
+        const result = await show({ revision: "@" });
+
+        // THEN: Returns change details
+        expect(result.changeId).toBeDefined();
+        expect(result.description).toBe("Test change");
+        expect(result.diff).toContain("test-file.txt");
       });
     });
   });

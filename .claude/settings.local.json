@@ -26,7 +26,8 @@
       "Read(//Users/zell/.claude/plugins/marketplaces/superpowers-dev/skills/jj-change-workflow/**)",
       "Bash(bd ready:*)",
       "Skill(wishful-thinking-programming)",
-      "Bash(bd epic:*)"
+      "Bash(bd epic:*)",
+      "Skill(discovery-tree-workflow)"
     ],
     "deny": [],
     "ask": []

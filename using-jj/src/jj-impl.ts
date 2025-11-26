@@ -16,6 +16,10 @@ import type {
   StartTaskResult,
   CheckpointInput,
   DescribeInput,
+  LogInput,
+  LogEntry,
+  ShowInput,
+  ShowResult,
 } from "./jj.js";
 
 /**
@@ -303,4 +307,61 @@ export const describeImpl = async (input: DescribeInput): Promise<void> => {
   }
 
   await setDescription(currentRepoPath, input.description);
+};
+
+/**
+ * Implementation for log
+ * @internal
+ */
+export const logImpl = async (input: LogInput): Promise<LogEntry[]> => {
+  if (!currentRepoPath) {
+    throw new Error("No repository set - call setRepository first");
+  }
+
+  // Build jj log command with limit if specified
+  const limit = input.limit || 10;
+
+  // Get log output with changeId and description for each change
+  const result = await $`jj log -r ::@ -n ${limit} --no-graph -T 'change_id ++ "\n" ++ description ++ "\n---\n"' --repository ${currentRepoPath}`.text();
+
+  // Parse the output into LogEntry objects
+  const entries: LogEntry[] = [];
+  const blocks = result.split('---\n').filter(block => block.trim());
+
+  for (const block of blocks) {
+    const lines = block.trim().split('\n');
+    if (lines.length >= 2) {
+      entries.push({
+        changeId: lines[0].trim(),
+        description: lines.slice(1).join('\n').trim(),
+      });
+    }
+  }
+
+  return entries;
+};
+
+/**
+ * Implementation for show
+ * @internal
+ */
+export const showImpl = async (input: ShowInput): Promise<ShowResult> => {
+  if (!currentRepoPath) {
+    throw new Error("No repository set - call setRepository first");
+  }
+
+  const revision = input.revision || "@";
+
+  // Get changeId and description
+  const changeId = await $`jj log -r ${revision} --no-graph -T 'change_id' --repository ${currentRepoPath}`.text();
+  const description = await $`jj log -r ${revision} --no-graph -T 'description' --repository ${currentRepoPath}`.text();
+
+  // Get diff
+  const diff = await $`jj diff -r ${revision} --repository ${currentRepoPath}`.text();
+
+  return {
+    changeId: changeId.trim(),
+    description: description.trim(),
+    diff: diff,
+  };
 };

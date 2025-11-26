@@ -50,11 +50,14 @@ Discovery Trees make work visible through hierarchical task breakdown that emerg
 
 ## The Discovery Tree Workflow
 
+**API Location**: This skill includes a ready-to-use TypeScript API in `src/beads.ts`. Import functions relative to the skill directory.
+
 ### 1. Set Workspace and Create Root Epic
 
 Every Discovery Tree starts with setting workspace context, then creating an epic (container) and root task (actual work):
 
 ```typescript
+// Import from discovery-tree-workflow skill's src directory
 import {
   setWorkspace,
   createTask,
@@ -64,7 +67,7 @@ import {
   findReadyTasks,
   getEpicStatus,
   drawTree
-} from './src/beads.js';
+} from '~/.claude/skills/discovery-tree-workflow/src/beads.js';
 
 // Set workspace context
 await setWorkspace({ workspacePath: '/path/to/project' });
