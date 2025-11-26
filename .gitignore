@@ -52,4 +52,7 @@ result-*
 tmp/
 temp/
 *.tmp
+*tmp.sh
+*tmp.ts
+*tmp.js
 node_modules
