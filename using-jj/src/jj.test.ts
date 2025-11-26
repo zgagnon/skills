@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { setRepository, getChangedFiles, getContext, cleanup, startTask, checkpoint, finishTask } from "./jj.js";
+import { setRepository, getChangedFiles, getContext, cleanup, startTask, checkpoint, finishTask, describe as describeChange } from "./jj.js";
 import { withJJ } from "./test-helpers.js";
 import { resolve } from "node:path";
 import { mkdirSync, rmSync } from "fs";
@@ -412,6 +412,24 @@ describe("finishTask", () => {
           { encoding: "utf8" }
         );
         expect(parentDiff).toContain("test-file.txt");
+      });
+    });
+  });
+});
+
+describe("describe", () => {
+  describe("when repository is set", () => {
+    test("sets description on current change", async () => {
+      await withJJ(async (repoPath) => {
+        // WHEN: Set description on current change
+        await describeChange({ description: "New description" });
+
+        // THEN: Description is set using jj CLI
+        const currentDesc = execSync(
+          `jj log -r @ --no-graph -T 'description' --repository "${repoPath}"`,
+          { encoding: "utf8" }
+        ).trim();
+        expect(currentDesc).toBe("New description");
       });
     });
   });

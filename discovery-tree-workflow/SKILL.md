@@ -1,17 +1,17 @@
 ---
 name: discovery-tree-workflow
-description: Use when planning and tracking work - creates visible, emergent work breakdown using bd (beads) with just-in-time planning and hierarchical task trees
+description: Use when planning and tracking work - creates visible, emergent work breakdown using TypeScript API with just-in-time planning and hierarchical task trees
 ---
 
 # Discovery Tree Workflow
 
 ## Overview
 
-Discovery Trees make work visible through hierarchical task breakdown that emerges just-in-time. Track work with bd (beads), grow the tree as you discover new requirements, maintain focus by capturing distractions.
+Discovery Trees make work visible through hierarchical task breakdown that emerges just-in-time. Track work programmatically with the TypeScript API, grow the tree as you discover new requirements, maintain focus by capturing distractions.
 
 **Core principle:** Start minimal, plan just-in-time, grow through discovery, make status visible.
 
-**Announce at start:** "I'm using the Discovery Tree workflow to track this work with bd."
+**Announce at start:** "I'm using the Discovery Tree workflow to track this work."
 
 ## When to Use
 
@@ -50,26 +50,52 @@ Discovery Trees make work visible through hierarchical task breakdown that emerg
 
 ## The Discovery Tree Workflow
 
-### 1. Create Root Epic and Task
+### 1. Set Workspace and Create Root Epic
 
-Every Discovery Tree starts with an epic (container) and a root task (actual work):
+Every Discovery Tree starts with setting workspace context, then creating an epic (container) and root task (actual work):
 
-```bash
-# Create epic (container for all work)
-bd create "Feature: User Authentication" -t epic -p 1 --json
+```typescript
+import {
+  setWorkspace,
+  createTask,
+  addDependency,
+  updateTask,
+  closeTask,
+  findReadyTasks,
+  getEpicStatus,
+  drawTree
+} from './src/beads.js';
 
-# Create root task (describes the user value)
-bd create "User Authentication [root]" -t task -p 1 --json
+// Set workspace context
+await setWorkspace({ workspacePath: '/path/to/project' });
 
-# Link root task to epic
-bd dep add <root-task-id> <epic-id> -t parent-child
+// Create epic (container for all work)
+const epic = await createTask({
+  title: "Feature: User Authentication",
+  type: "epic",
+  priority: 1
+});
+
+// Create root task (describes the user value)
+const rootTask = await createTask({
+  title: "User Authentication [root]",
+  type: "task",
+  priority: 1
+});
+
+// Link root task to epic
+await addDependency({
+  taskId: rootTask.id,
+  dependsOnId: epic.id,
+  type: "parent-child"
+});
 ```
 
 **Why both epic and root task?**
 - Epic: Container that tracks overall completion
 - Root task: Actual work item that can have subtasks
 
-### 2. Initial Breakdown Conversation
+### 2. Initial Breakdown
 
 Have a quick conversation (2-10 minutes) to identify first level of work:
 
@@ -80,14 +106,44 @@ Have a quick conversation (2-10 minutes) to identify first level of work:
 
 **Create tasks for what you discover:**
 
-```bash
-# Create main tasks
-bd create "API endpoint for login" -t task -p 1 --json
-bd create "Password validation logic" -t task -p 1 --json
-bd create "Session management" -t task -p 1 --json
+```typescript
+// Create main tasks
+const task1 = await createTask({
+  title: "API endpoint for login",
+  type: "task",
+  priority: 1
+});
 
-# Link them to root task
-bd dep add <task-id> <root-task-id> -t parent-child
+const task2 = await createTask({
+  title: "Password validation logic",
+  type: "task",
+  priority: 1
+});
+
+const task3 = await createTask({
+  title: "Session management",
+  type: "task",
+  priority: 1
+});
+
+// Link them to root task
+await addDependency({
+  taskId: task1.id,
+  dependsOnId: rootTask.id,
+  type: "parent-child"
+});
+
+await addDependency({
+  taskId: task2.id,
+  dependsOnId: rootTask.id,
+  type: "parent-child"
+});
+
+await addDependency({
+  taskId: task3.id,
+  dependsOnId: rootTask.id,
+  type: "parent-child"
+});
 ```
 
 **Don't over-plan:** Stop when you have enough to start. More detail emerges as you work.
@@ -96,8 +152,15 @@ bd dep add <task-id> <root-task-id> -t parent-child
 
 Pick a task and claim it:
 
-```bash
-bd update <task-id> --status in_progress
+```typescript
+// Find what's ready to work on
+const readyTasks = await findReadyTasks({ limit: 10 });
+
+// Claim the first ready task
+await updateTask({
+  taskId: readyTasks[0].id,
+  status: "in_progress"
+});
 ```
 
 **As you work:**
@@ -105,42 +168,61 @@ bd update <task-id> --status in_progress
 - Find blocking issues? Create with `blocked` status
 - Get distracted by ideas? Create low-priority task to bookmark
 
-```bash
-# Discovered more work
-bd create "Validate email format" -t task -p 1 --json
-bd dep add <subtask-id> <parent-task-id> -t parent-child
+```typescript
+// Discovered more work
+const subtask = await createTask({
+  title: "Validate email format",
+  type: "task",
+  priority: 1
+});
 
-# Found blocker
-bd create "Database schema needs user table" -t task -p 0 --json
-bd update <current-task-id> --status blocked
+await addDependency({
+  taskId: subtask.id,
+  dependsOnId: task1.id,
+  type: "parent-child"
+});
+
+// Found blocker
+const blocker = await createTask({
+  title: "Database schema needs user table",
+  type: "task",
+  priority: 0
+});
+
+await updateTask({
+  taskId: task1.id,
+  status: "blocked"
+});
 ```
 
 ### 4. Complete and Continue
 
 When task is done:
 
-```bash
-bd close <task-id> --reason "Completed"
+```typescript
+await closeTask({
+  taskId: task1.id,
+  reason: "Completed"
+});
+
+// Update parent with what was accomplished
+await updateTask({
+  taskId: rootTask.id,
+  notes: "Completed: API endpoint for login. Previously: Initial setup"
+});
 ```
 
-**IMPORTANT: Update parent task with what was accomplished:**
-
-```bash
-# View parent task to see current state
-bd show <parent-task-id>
-
-# Update parent with accumulated progress
-bd update <parent-task-id> --notes "Completed: <what-you-just-did>. Previously: <what-was-done-before>"
-# OR update the description to reflect ALL completed subtasks
-bd update <parent-task-id> --description "Updated description reflecting all work done so far"
-```
-
-This keeps the parent task's context accurate as subtasks complete, similar to how jj-change-workflow updates commit messages after squashing.
+**IMPORTANT:** Update parent task with what was accomplished to keep context accurate as subtasks complete.
 
 Check progress:
 
-```bash
-bd epic status --no-daemon
+```typescript
+const status = await getEpicStatus({ epicId: epic.id });
+console.log(`Progress: ${status.completionPercentage}%`);
+console.log(`${status.completedTasks}/${status.totalTasks} tasks complete`);
+
+// See what's ready to work on next
+const nextReady = await findReadyTasks({ limit: 5 });
 ```
 
 **If more work remains:** Claim next task, repeat cycle
@@ -151,22 +233,16 @@ bd epic status --no-daemon
 
 ### 5. View Progress
 
-**Bottom-up view (from any task):**
-```bash
-bd dep tree <task-id>
-# Shows: current task → parent → grandparent → root
-```
+```typescript
+// Bottom-up view from any task (current → parent → grandparent → root)
+const tree = await getDependencyTree({ taskId: currentTask.id });
 
-**Epic completion:**
-```bash
-bd epic status --no-daemon
-# Shows: progress percentage for each epic
-```
+// Visual tree (top-down view from epic)
+const visualTree = await drawTree({ taskId: epic.id });
+console.log(visualTree); // Display to user
 
-**See what's ready to work:**
-```bash
-bd ready
-# Shows: all unblocked open tasks
+// Epic completion stats
+const epicStatus = await getEpicStatus({ epicId: epic.id });
 ```
 
 ## Integration with Skills
@@ -191,61 +267,183 @@ bd ready
 
 ## Quick Reference
 
-| Action | Command |
-|--------|---------|
-| Create epic | `bd create "Epic name" -t epic -p 1 --json` |
-| Create root task | `bd create "Root [root]" -t task -p 1 --json` |
-| Link to parent | `bd dep add <child-id> <parent-id> -t parent-child` |
-| Claim task | `bd update <task-id> --status in_progress` |
-| Complete task | `bd close <task-id> --reason "Done"` |
-| Update parent after subtask | `bd update <parent-id> --notes "Completed: X"` |
-| View tree | `bd dep tree <task-id>` |
-| Check progress | `bd epic status --no-daemon` |
-| Find ready work | `bd ready` |
-| Mark blocked | `bd update <task-id> --status blocked` |
+| Action | API Function |
+|--------|--------------|
+| Set workspace | `setWorkspace({ workspacePath })` |
+| Create epic | `createTask({ title, type: "epic", priority: 1 })` |
+| Create task | `createTask({ title, type: "task", priority })` |
+| Link to parent | `addDependency({ taskId, dependsOnId, type: "parent-child" })` |
+| Claim task | `updateTask({ taskId, status: "in_progress" })` |
+| Complete task | `closeTask({ taskId, reason })` |
+| Update task | `updateTask({ taskId, notes, description, title })` |
+| View tree | `getDependencyTree({ taskId })` |
+| Draw visual tree | `drawTree({ taskId })` |
+| Check progress | `getEpicStatus({ epicId })` |
+| Find ready work | `findReadyTasks({ limit })` |
+| Mark blocked | `updateTask({ taskId, status: "blocked" })` |
+| Show task details | `showTask({ taskId })` |
+| Append notes | `appendNotes({ taskId, notes })` |
 
 ## Common Patterns
 
 ### Capture Distractions
-```bash
-# Something came up while working
-bd create "Refactor utils.ts for clarity" -t task -p 3 --json
-bd dep add <distraction-id> <current-parent-id> -t parent-child
-# Now it's captured, back to current work
+
+```typescript
+// Something came up while working
+const distraction = await createTask({
+  title: "Refactor utils.ts for clarity",
+  type: "task",
+  priority: 3
+});
+
+await addDependency({
+  taskId: distraction.id,
+  dependsOnId: currentParent.id,
+  type: "parent-child"
+});
+// Now it's captured, back to current work
 ```
 
 ### Break Down Complex Task
-```bash
-# Realized task is bigger than expected
-bd create "Part 1: Schema validation" -t task -p 1 --json
-bd create "Part 2: Error handling" -t task -p 1 --json
-bd dep add <subtask1-id> <complex-task-id> -t parent-child
-bd dep add <subtask2-id> <complex-task-id> -t parent-child
-bd update <complex-task-id> --status open  # Parent stays open until children done
+
+```typescript
+// Realized task is bigger than expected
+const subtask1 = await createTask({
+  title: "Part 1: Schema validation",
+  type: "task",
+  priority: 1
+});
+
+const subtask2 = await createTask({
+  title: "Part 2: Error handling",
+  type: "task",
+  priority: 1
+});
+
+await addDependency({
+  taskId: subtask1.id,
+  dependsOnId: complexTask.id,
+  type: "parent-child"
+});
+
+await addDependency({
+  taskId: subtask2.id,
+  dependsOnId: complexTask.id,
+  type: "parent-child"
+});
+
+// Parent stays open until children done
+await updateTask({
+  taskId: complexTask.id,
+  status: "open"
+});
 ```
 
 ### Handle Discovered Prerequisites
-```bash
-# Found something that must be done first
-bd create "Add user_id column to sessions table" -t task -p 0 --json
-bd dep add <current-task-id> <prerequisite-id> -t blocks
-bd update <current-task-id> --status blocked
-bd update <prerequisite-id> --status in_progress
+
+```typescript
+// Found something that must be done first
+const prerequisite = await createTask({
+  title: "Add user_id column to sessions table",
+  type: "task",
+  priority: 0
+});
+
+await addDependency({
+  taskId: currentTask.id,
+  dependsOnId: prerequisite.id,
+  type: "blocks"
+});
+
+await updateTask({
+  taskId: currentTask.id,
+  status: "blocked"
+});
+
+await updateTask({
+  taskId: prerequisite.id,
+  status: "in_progress"
+});
+```
+
+### Restructure Tree Based on New Learnings
+
+```typescript
+// When requirements change and tree needs reorganizing
+await setWorkspace({ workspacePath });
+
+// Create new epic/structure
+const newEpic = await createTask({
+  title: "Revised Approach",
+  type: "epic",
+  priority: 1
+});
+
+// Create tasks programmatically
+const tasks = await Promise.all([
+  createTask({ title: "New component A", type: "task", priority: 1 }),
+  createTask({ title: "New component B", type: "task", priority: 1 }),
+  createTask({ title: "Integration layer", type: "task", priority: 2 })
+]);
+
+// Link all at once
+for (const task of tasks) {
+  await addDependency({
+    taskId: task.id,
+    dependsOnId: newEpic.id,
+    type: "parent-child"
+  });
+}
+
+// Close obsolete tasks
+await closeTask({
+  taskId: oldTask.id,
+  reason: "Superseded by revised approach"
+});
+```
+
+## API Types
+
+```typescript
+type TaskType = "bug" | "feature" | "task" | "epic" | "chore";
+type TaskStatus = "open" | "in_progress" | "blocked" | "closed";
+type DependencyType = "parent-child" | "blocks" | "related" | "discovered-from";
+
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  status: TaskStatus;
+  priority: number;
+  taskType: TaskType;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface EpicStatus {
+  epicId: string;
+  totalTasks: number;
+  completedTasks: number;
+  inProgressTasks: number;
+  blockedTasks: number;
+  openTasks: number;
+  completionPercentage: number;
+}
 ```
 
 ## Red Flags
 
 **STOP if you catch yourself:**
 - Planning all details upfront before starting work
-- Using TodoWrite instead of bd for multi-step work
-- Keeping task breakdown in your head instead of bd
+- Using TodoWrite instead of discovery trees for multi-step work
+- Keeping task breakdown in your head instead of API
 - Not capturing emerged work because "it's small"
-- Marking tasks complete without using `bd close`
+- Marking tasks complete without using `closeTask()`
 - Closing subtasks without updating parent task with what was done
-- Forgetting to check `bd ready` when looking for next work
+- Forgetting to check `findReadyTasks()` when looking for next work
 - Creating flat task lists instead of hierarchical trees
 
-**All of these mean: Use Discovery Trees with bd for visible, emergent planning.**
+**All of these mean: Use Discovery Trees with the TypeScript API for visible, emergent planning.**
 
 ## Why This Works
 

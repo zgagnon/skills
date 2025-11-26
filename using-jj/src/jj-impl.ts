@@ -15,6 +15,7 @@ import type {
   StartTaskInput,
   StartTaskResult,
   CheckpointInput,
+  DescribeInput,
 } from "./jj.js";
 
 /**
@@ -290,4 +291,16 @@ export const finishTaskImpl = async (): Promise<void> => {
 
   // Abandon the empty working copy
   await abandonWorkingCopy(currentRepoPath);
+};
+
+/**
+ * Implementation for describe
+ * @internal
+ */
+export const describeImpl = async (input: DescribeInput): Promise<void> => {
+  if (!currentRepoPath) {
+    throw new Error("No repository set - call setRepository first");
+  }
+
+  await setDescription(currentRepoPath, input.description);
 };

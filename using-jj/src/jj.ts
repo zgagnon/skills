@@ -22,6 +22,7 @@ import {
   startTaskImpl,
   checkpointImpl,
   finishTaskImpl,
+  describeImpl,
 } from "./jj-impl.js";
 
 /**
@@ -54,6 +55,10 @@ export interface StartTaskResult {
 
 export interface CheckpointInput {
   summary: string;
+}
+
+export interface DescribeInput {
+  description: string;
 }
 
 /**
@@ -142,4 +147,16 @@ export const checkpoint = async (input: CheckpointInput): Promise<void> => {
  */
 export const finishTask = async (): Promise<void> => {
   return finishTaskImpl();
+};
+
+/**
+ * Describe current change
+ *
+ * Sets the description on the current change (@).
+ *
+ * @param input - Description configuration with description text
+ * @throws Error if no repository is set
+ */
+export const describe = async (input: DescribeInput): Promise<void> => {
+  return describeImpl(input);
 };
