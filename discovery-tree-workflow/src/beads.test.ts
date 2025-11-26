@@ -489,4 +489,32 @@ describe("beads API", () => {
       });
     });
   });
+
+  describe("showTask", () => {
+    describe("when task exists", () => {
+      test("returns full task details", async () => {
+        await withBD(async (workspace) => {
+          await beads.setWorkspace({ workspacePath: workspace });
+
+          const task = await beads.createTask({
+            title: "Test task for details",
+            type: "task",
+            priority: 2,
+          });
+
+          // Wishful thinking: get full task details
+          const details = await beads.showTask({ taskId: task.id });
+
+          // THEN: Returns complete task information
+          expect(details.id).toBe(task.id);
+          expect(details.title).toBe("Test task for details");
+          expect(details.status).toBe("open");
+          expect(details.taskType).toBe("task");
+          expect(details.priority).toBe(2);
+          expect(details.createdAt).toBeDefined();
+          expect(details.updatedAt).toBeDefined();
+        });
+      });
+    });
+  });
 });

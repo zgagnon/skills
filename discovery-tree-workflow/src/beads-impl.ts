@@ -315,3 +315,31 @@ export const getEpicStatusImpl = async (input: { epicId: string }): Promise<any>
     throw new Error(`Failed to get epic status: ${errorMsg}`);
   }
 };
+
+export const showTaskImpl = async (input: { taskId: string }): Promise<any> => {
+  if (!currentWorkspacePath) {
+    throw new Error("No workspace set - call setWorkspace first");
+  }
+
+  try {
+    // Call bd show --json to get task details
+    const result = await $`cd ${currentWorkspacePath} && bd show ${input.taskId} --json`.text();
+    const taskArray = JSON.parse(result);
+    const taskData = taskArray[0]; // bd show returns array
+
+    // Map to Task interface
+    return {
+      id: taskData.id,
+      title: taskData.title,
+      description: taskData.description || "",
+      status: taskData.status,
+      priority: taskData.priority,
+      taskType: taskData.issue_type,
+      createdAt: taskData.created_at,
+      updatedAt: taskData.updated_at,
+    };
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to show task: ${errorMsg}`);
+  }
+};

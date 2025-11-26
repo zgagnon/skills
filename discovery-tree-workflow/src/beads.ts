@@ -13,6 +13,7 @@ import {
   getEpicStatusImpl,
   findReadyTasksImpl,
   updateTaskImpl,
+  showTaskImpl,
 } from "./beads-impl.js";
 
 /**
@@ -85,6 +86,10 @@ export interface UpdateTaskInput {
   notes?: string;
   description?: string;
   title?: string;
+}
+
+export interface ShowTaskInput {
+  taskId: string;
 }
 
 /**
@@ -195,4 +200,16 @@ export const findReadyTasks = async (input: FindReadyTasksInput): Promise<Task[]
  */
 export const updateTask = async (input: UpdateTaskInput): Promise<void> => {
   return updateTaskImpl(input);
+};
+
+/**
+ * Show full task details
+ *
+ * Returns complete information about a task including dependencies and dependents.
+ *
+ * @param input - Task ID to show
+ * @returns Task with full details
+ */
+export const showTask = async (input: ShowTaskInput): Promise<Task> => {
+  return showTaskImpl(input);
 };
