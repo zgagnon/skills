@@ -361,3 +361,21 @@ export const addDependencyImpl = async (input: {
     throw new Error(`Failed to add dependency: ${errorMsg}`);
   }
 };
+
+export const appendNotesImpl = async (input: {
+  taskId: string;
+  notes: string;
+}): Promise<void> => {
+  if (!currentWorkspacePath) {
+    throw new Error("No workspace set - call setWorkspace first");
+  }
+
+  try {
+    // Call bd update --notes to append notes
+    // Note: bd update --notes will append to existing notes, not overwrite
+    await $`cd ${currentWorkspacePath} && bd update ${input.taskId} --notes ${input.notes}`.quiet();
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to append notes: ${errorMsg}`);
+  }
+};

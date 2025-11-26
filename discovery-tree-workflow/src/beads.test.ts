@@ -557,4 +557,33 @@ describe("beads API", () => {
       });
     });
   });
+
+  describe("appendNotes", () => {
+    describe("when appending to task with no existing notes", () => {
+      test("adds notes to empty notes field", async () => {
+        await withBD(async (workspace) => {
+          await beads.setWorkspace({ workspacePath: workspace });
+
+          const task = await beads.createTask({
+            title: "Task for notes",
+            type: "task",
+            priority: 2,
+          });
+
+          // Wishful thinking: append notes without reading current value
+          await beads.appendNotes({
+            taskId: task.id,
+            notes: "First note"
+          });
+
+          // THEN: Notes are added
+          const result = await $`cd ${workspace} && bd show ${task.id} --json`.text();
+          const taskArray = JSON.parse(result);
+          const updatedTask = taskArray[0];
+
+          expect(updatedTask.notes).toBe("First note");
+        });
+      });
+    });
+  });
 });

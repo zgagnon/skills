@@ -15,6 +15,7 @@ import {
   updateTaskImpl,
   showTaskImpl,
   addDependencyImpl,
+  appendNotesImpl,
 } from "./beads-impl.js";
 
 /**
@@ -98,6 +99,11 @@ export interface AddDependencyInput {
   taskId: string;
   dependsOnId: string;
   type: DependencyType;
+}
+
+export interface AppendNotesInput {
+  taskId: string;
+  notes: string;
 }
 
 /**
@@ -233,4 +239,17 @@ export const showTask = async (input: ShowTaskInput): Promise<Task> => {
  */
 export const addDependency = async (input: AddDependencyInput): Promise<void> => {
   return addDependencyImpl(input);
+};
+
+/**
+ * Append notes to a task
+ *
+ * Adds notes to task without reading current value first.
+ * Useful to avoid race conditions.
+ *
+ * @param input - Task ID and notes to append
+ * @returns void
+ */
+export const appendNotes = async (input: AppendNotesInput): Promise<void> => {
+  return appendNotesImpl(input);
 };
