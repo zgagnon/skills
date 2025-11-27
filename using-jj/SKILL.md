@@ -223,6 +223,34 @@ await jj.startTask({ description: 'Feature' });
 
 This is **intentional**. The working copy (@) is your scratch space. When you checkpoint, it gets folded into the task change above it.
 
+## Common Rationalizations - Use The API
+
+**CRITICAL: The TypeScript API is designed for this workflow. It's safer than raw jj commands.**
+
+If you catch yourself wanting to run `jj status` or `jj log` before trying an API operation, STOP. You are rationalizing.
+
+| Rationalization | Reality |
+|----------------|---------|
+| "Check state with jj status/log first" | **WRONG.** Use the TypeScript API instead. It's designed for this workflow and safer than raw commands. |
+| "Being defensive/prudent/careful" | **WRONG.** The API is designed to be safe. Just try the API operation. |
+| "Need to know current state" | **WRONG.** The API tells you what you need when you try the operation. |
+| "Error docs imply I should check" | **WRONG.** Error recovery is for HANDLING API errors, not running raw jj commands. |
+| "Quick check won't hurt" | **WRONG.** You're circumventing the API's safety mechanisms. |
+
+**Why this matters:**
+- The TypeScript API was **explicitly built for this workflow**
+- Using the API is **safer than raw jj commands**
+- Checking first with raw commands **defeats the API's design**
+- Just try the API operation - handle errors if they occur
+
+**Red Flags - You're Rationalizing:**
+- Running `jj status`, `jj log`, or other raw commands before API calls
+- Thinking "let me just check..."
+- Worrying about "what if there's uncommitted work"
+- Not trusting the API to tell you what you need
+
+**All of these mean: Just try the API operation. Handle errors when they occur.**
+
 ## Workflow Checklist
 
 When starting new work:
