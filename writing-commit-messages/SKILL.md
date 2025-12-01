@@ -153,6 +153,20 @@ Format:
 - [ ] Body wrapped at 72 chars
 - [ ] Body explains what and why
 
+## Common Rationalizations (STOP These)
+
+| Excuse | Reality |
+|--------|---------|
+| "It's urgent, no time for proper message" | Good commit message takes 30 seconds. Bad message wastes hours of future debugging time. |
+| "Lead said commit messages don't matter" | History is permanent. Unclear messages waste developer time forever. Write it properly. |
+| "I already wrote this longer subject line" | Delete it. Rewrite under 50 chars. Sunk cost doesn't justify breaking the rule. |
+| "It's just WIP/local/temporary" | WIP commits often become permanent. Local branches get pushed. Write it right the first time. |
+| "I'll fix it later with --amend" | You won't. Write it correctly now. Takes the same time. |
+| "No one will read this anyway" | Someone will read it when debugging. That someone might be you in 6 months. |
+| "This is just experimental code" | Experiments get committed. Documentation matters even more for experimental work. |
+
+**If you're thinking any of these thoughts:** STOP. Follow the seven rules. No exceptions.
+
 ## Source
 
 Based on: https://cbea.ms/git-commit/
