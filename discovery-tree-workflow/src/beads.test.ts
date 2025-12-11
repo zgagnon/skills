@@ -85,7 +85,7 @@ describe("beads API", () => {
         } finally {
           await fs.promises.rm(tmpDir, { recursive: true, force: true });
         }
-      });
+      }, 10000); // Increase timeout: 3s for bd timeout + setup/cleanup time
     });
   });
 

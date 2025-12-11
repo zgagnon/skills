@@ -19,9 +19,9 @@ import {
   getContextImpl,
   getChangedFilesImpl,
   cleanupImpl,
-  startTaskImpl,
+  startChangeImpl,
   checkpointImpl,
-  finishTaskImpl,
+  finishChangeImpl,
   describeImpl,
   logImpl,
   showImpl,
@@ -46,11 +46,11 @@ export interface WorkflowContext {
   description?: string;
 }
 
-export interface StartTaskInput {
+export interface StartChangeInput {
   description: string;
 }
 
-export interface StartTaskResult {
+export interface StartChangeResult {
   changeId: string;
   wasEmpty: boolean;
 }
@@ -132,17 +132,17 @@ export const cleanup = (): void => {
 };
 
 /**
- * Start a new task
+ * Start a new change
  *
- * Creates a described change for the task and an empty working copy.
+ * Creates a described change and an empty working copy.
  * If current change is empty with no description, describes it instead.
  *
- * @param input - Task configuration with description
- * @returns Task result with change ID and whether it was empty
+ * @param input - Change configuration with description
+ * @returns Change result with change ID and whether it was empty
  * @throws Error if no repository is set or current change has no description with changes
  */
-export const startTask = async (input: StartTaskInput): Promise<StartTaskResult> => {
-  return startTaskImpl(input);
+export const startChange = async (input: StartChangeInput): Promise<StartChangeResult> => {
+  return startChangeImpl(input);
 };
 
 /**
@@ -159,15 +159,15 @@ export const checkpoint = async (input: CheckpointInput): Promise<void> => {
 };
 
 /**
- * Finish current task
+ * Finish current change
  *
  * Moves to the parent described change and creates a new empty working copy.
- * This completes the task lifecycle.
+ * This completes the change lifecycle.
  *
  * @throws Error if no repository is set
  */
-export const finishTask = async (): Promise<void> => {
-  return finishTaskImpl();
+export const finishChange = async (): Promise<void> => {
+  return finishChangeImpl();
 };
 
 /**

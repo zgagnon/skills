@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { setRepository, getChangedFiles, getContext, cleanup, startTask, checkpoint, finishTask, describe as describeChange, log, show } from "./jj.js";
+import { setRepository, getChangedFiles, getContext, cleanup, startChange, checkpoint, finishChange, describe as describeChange, log, show } from "./jj.js";
 import { withJJ } from "./test-helpers.js";
 import { resolve } from "node:path";
 import { mkdirSync, rmSync } from "fs";
@@ -157,12 +157,12 @@ describe("cleanup", () => {
   });
 });
 
-describe("startTask", () => {
+describe("startChange", () => {
   describe("when no repository is set", () => {
     test("throws error", async () => {
       cleanup();
 
-      await expect(startTask({ description: "Test task" })).rejects.toThrow("No repository set - call setRepository first");
+      await expect(startChange({ description: "Test task" })).rejects.toThrow("No repository set - call setRepository first");
     });
   });
 
@@ -173,14 +173,14 @@ describe("startTask", () => {
           // Add a file to create changes
           execSync(`touch "${repoPath}/test-file.txt"`, { encoding: "utf8" });
 
-          await expect(startTask({ description: "Test task" })).rejects.toThrow("Current change has no description");
+          await expect(startChange({ description: "Test task" })).rejects.toThrow("Current change has no description");
         });
       });
 
       test("describes current change when empty", async () => {
         await withJJ(async (repoPath) => {
           // Fresh jj repo: no description, no changes
-          const result = await startTask({ description: "Test task" });
+          const result = await startChange({ description: "Test task" });
 
           // Should describe current change and create new working copy
           expect(result.changeId).toBeDefined();
@@ -208,7 +208,7 @@ describe("startTask", () => {
       await withJJ(async (repoPath) => {
         execSync(`jj describe -m "Initial work" --repository "${repoPath}"`, { encoding: "utf8" });
 
-        const result = await startTask({ description: "Test task" });
+        const result = await startChange({ description: "Test task" });
 
         expect(result.changeId).toBeDefined();
         expect(typeof result.changeId).toBe("string");
@@ -220,7 +220,7 @@ describe("startTask", () => {
       await withJJ(async (repoPath) => {
         execSync(`jj describe -m "Initial work" --repository "${repoPath}"`, { encoding: "utf8" });
 
-        const result = await startTask({ description: "Test task" });
+        const result = await startChange({ description: "Test task" });
 
         expect(typeof result.wasEmpty).toBe("boolean");
       });
@@ -232,7 +232,7 @@ describe("startTask", () => {
         // Create a file to have changed files
         execSync(`touch "${repoPath}/test-file.txt"`, { encoding: "utf8" });
 
-        const result = await startTask({ description: "Test task" });
+        const result = await startChange({ description: "Test task" });
 
         expect(result.wasEmpty).toBe(false);
       });
@@ -243,7 +243,7 @@ describe("startTask", () => {
         execSync(`jj describe -m "Initial work" --repository "${repoPath}"`, { encoding: "utf8" });
 
         // Clean repo should have no changed files
-        const result = await startTask({ description: "Test task" });
+        const result = await startChange({ description: "Test task" });
 
         expect(result.wasEmpty).toBe(true);
       });
@@ -259,7 +259,7 @@ describe("startTask", () => {
         ).trim();
 
         const description = "Implement feature X";
-        const result = await startTask({ description });
+        const result = await startChange({ description });
 
         // Current change (@) should be empty and have no description
         const currentDesc = execSync(
@@ -298,7 +298,7 @@ describe("checkpoint", () => {
       await withJJ(async (repoPath) => {
         // Set up task workflow: described change with empty working copy
         execSync(`jj describe -m "Initial work" --repository "${repoPath}"`, { encoding: "utf8" });
-        await startTask({ description: "Test task" });
+        await startChange({ description: "Test task" });
 
         // Add some work to the working copy
         execSync(`touch "${repoPath}/test-file.txt"`, { encoding: "utf8" });
@@ -326,7 +326,7 @@ describe("checkpoint", () => {
     test("appends summary as bullet point to parent description", async () => {
       await withJJ(async (repoPath) => {
         execSync(`jj describe -m "Initial work" --repository "${repoPath}"`, { encoding: "utf8" });
-        await startTask({ description: "Test task" });
+        await startChange({ description: "Test task" });
 
         // Checkpoint with summary
         await checkpoint({ summary: "Implemented feature X" });
@@ -345,7 +345,7 @@ describe("checkpoint", () => {
     test("preserves parent description when squashing", async () => {
       await withJJ(async (repoPath) => {
         execSync(`jj describe -m "Initial work" --repository "${repoPath}"`, { encoding: "utf8" });
-        await startTask({ description: "Test task" });
+        await startChange({ description: "Test task" });
 
         // First checkpoint
         execSync(`touch "${repoPath}/file1.txt"`, { encoding: "utf8" });
@@ -369,12 +369,12 @@ describe("checkpoint", () => {
   });
 });
 
-describe("finishTask", () => {
+describe("finishChange", () => {
   describe("when no repository is set", () => {
     test("throws error", async () => {
       cleanup();
 
-      await expect(finishTask()).rejects.toThrow("No repository set - call setRepository first");
+      await expect(finishChange()).rejects.toThrow("No repository set - call setRepository first");
     });
   });
 
@@ -382,14 +382,14 @@ describe("finishTask", () => {
     test("moves to described change and creates new empty working copy", async () => {
       await withJJ(async (repoPath) => {
         execSync(`jj describe -m "Initial work" --repository "${repoPath}"`, { encoding: "utf8" });
-        await startTask({ description: "Test task" });
+        await startChange({ description: "Test task" });
 
         // Add work and checkpoint
         execSync(`touch "${repoPath}/test-file.txt"`, { encoding: "utf8" });
         await checkpoint({ summary: "Added test file" });
 
         // Finish task
-        await finishTask();
+        await finishChange();
 
         // Current change should be empty with no description
         const currentDesc = execSync(

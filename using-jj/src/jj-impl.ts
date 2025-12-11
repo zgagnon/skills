@@ -12,8 +12,8 @@ import type {
   SetRepositoryInput,
   RepositoryStatus,
   WorkflowContext,
-  StartTaskInput,
-  StartTaskResult,
+  StartChangeInput,
+  StartChangeResult,
   CheckpointInput,
   DescribeInput,
   LogInput,
@@ -216,10 +216,10 @@ export const cleanupImpl = (): void => {
 };
 
 /**
- * Implementation for startTask
+ * Implementation for startChange
  * @internal
  */
-export const startTaskImpl = async (input: StartTaskInput): Promise<StartTaskResult> => {
+export const startChangeImpl = async (input: StartChangeInput): Promise<StartChangeResult> => {
   if (!currentRepoPath) {
     throw new Error("No repository set - call setRepository first");
   }
@@ -285,10 +285,10 @@ export const checkpointImpl = async (input: CheckpointInput): Promise<void> => {
 };
 
 /**
- * Implementation for finishTask
+ * Implementation for finishChange
  * @internal
  */
-export const finishTaskImpl = async (): Promise<void> => {
+export const finishChangeImpl = async (): Promise<void> => {
   if (!currentRepoPath) {
     throw new Error("No repository set - call setRepository first");
   }

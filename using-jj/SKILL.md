@@ -32,7 +32,7 @@ Don't use for:
 INITIAL STATE:
 @  (empty) ← you are here
 
-AFTER startTask("Add login"):
+AFTER startChange("Add login"):
 @  (empty working) ← you edit here
 ○  "Add login"    ← task description
 
@@ -47,7 +47,7 @@ AFTER more changes + checkpoint("Added validation"):
    - Created form
    - Added validation"
 
-AFTER finishTask():
+AFTER finishChange():
 @  (empty)        ← new working copy
 ○  "Add login     ← completed task
    - Created form
@@ -65,9 +65,9 @@ AFTER finishTask():
 | Function | Preconditions | What It Does |
 |----------|---------------|--------------|
 | `setRepository()` | Repo exists, is jj repo | Initialize context (in-memory only), return status |
-| `startTask()` | @ is empty OR has description | Create described task + working copy |
+| `startChange()` | @ is empty OR has description | Create described task + working copy |
 | `checkpoint()` | In task, @ has changes | Squash @ to parent, append bullet point |
-| `finishTask()` | In task | Move to parent, create new @ |
+| `finishChange()` | In task | Move to parent, create new @ |
 | `getContext()` | Repository set | Return current change ID |
 | `getChangedFiles()` | Repository set | List modified files |
 | `cleanup()` | None | Clear repository context |
@@ -84,7 +84,7 @@ import * as jj from './src/jj';
 await jj.setRepository({ repositoryPath: '/path/to/repo' });
 
 // 2. Start task
-await jj.startTask({ description: 'Add authentication' });
+await jj.startChange({ description: 'Add authentication' });
 
 // 3. Make changes to files
 // ... edit code ...
@@ -99,7 +99,7 @@ await jj.checkpoint({ summary: 'Created login form' });
 await jj.checkpoint({ summary: 'Added password validation' });
 
 // 7. Finish task
-await jj.finishTask();
+await jj.finishChange();
 // Task change now contains:
 // "Add authentication
 //  - Created login form
@@ -115,7 +115,7 @@ This means @ has uncommitted work but no description. Two options:
 ```typescript
 // Option 1: Describe and preserve the work
 // $ jj describe -m "Previous work"
-await jj.startTask({ description: 'New task' });
+await jj.startChange({ description: 'New task' });
 
 // Option 2: Ask your human partner what to do
 // "The current change has uncommitted work without a description.
@@ -138,13 +138,13 @@ Just try the operation - the API will tell you if there's a problem:
 await jj.setRepository({ repositoryPath: './repo' });
 
 try {
-  await jj.startTask({ description: 'New feature' });
+  await jj.startChange({ description: 'New feature' });
 } catch (error) {
   if (error.message.includes('no description')) {
     // Current @ has uncommitted work without description
     // SAFE: Describe it to preserve the work
     // $ jj describe -m "Previous work in progress"
-    // Then retry startTask
+    // Then retry startChange
 
     // OR ask your human partner:
     // "I found uncommitted work. Should I describe it or is it safe to discard?"
@@ -160,7 +160,7 @@ try {
 ```typescript
 // BAD: Catching and ignoring errors
 try {
-  await jj.startTask({ description: 'Feature' });
+  await jj.startChange({ description: 'Feature' });
 } catch (error) {
   // Ignore and continue?
 }
@@ -169,7 +169,7 @@ try {
 ```typescript
 // GOOD: Handle errors meaningfully
 try {
-  await jj.startTask({ description: 'Feature' });
+  await jj.startChange({ description: 'Feature' });
 } catch (error) {
   console.error('Failed to start task:', error.message);
   // Take corrective action based on the error
@@ -197,25 +197,25 @@ if (files.length > 0) {
 
 ```typescript
 // BAD: Task left in-progress
-await jj.startTask({ description: 'Feature' });
+await jj.startChange({ description: 'Feature' });
 // ... make changes ...
 await jj.checkpoint({ summary: 'Done' });
-// ❌ Never called finishTask()
+// ❌ Never called finishChange()
 ```
 
 ```typescript
 // GOOD: Always finish
-await jj.startTask({ description: 'Feature' });
+await jj.startChange({ description: 'Feature' });
 // ... make changes ...
 await jj.checkpoint({ summary: 'Done' });
-await jj.finishTask(); // ✓ Completes the workflow
+await jj.finishChange(); // ✓ Completes the workflow
 ```
 
 ### ❌ Not Understanding the Two-Change Creation
 
 ```typescript
-// CONFUSION: "Why are there two changes after startTask?"
-await jj.startTask({ description: 'Feature' });
+// CONFUSION: "Why are there two changes after startChange?"
+await jj.startChange({ description: 'Feature' });
 // Creates TWO changes:
 // @  (empty working) ← you edit here
 // ○  "Feature"      ← accumulates your work
@@ -256,11 +256,11 @@ If you catch yourself wanting to run `jj status` or `jj log` before trying an AP
 When starting new work:
 
 - [ ] Call `setRepository()` first
-- [ ] Try `startTask()` with clear description
+- [ ] Try `startChange()` with clear description
 - [ ] If it fails with "no description" error, describe the uncommitted work or ask your human partner for guidance
 - [ ] Make changes to files
 - [ ] Call `checkpoint()` with meaningful summaries (as often as needed)
-- [ ] Call `finishTask()` when done
+- [ ] Call `finishChange()` when done
 - [ ] Verify with `jj log` that task change looks correct
 
 ## Real-World Impact

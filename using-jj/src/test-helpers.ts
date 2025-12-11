@@ -22,7 +22,7 @@ import { setRepository, cleanup } from "./jj.js";
  * @example
  * ```typescript
  * await withJJ(async (repoPath) => {
- *   const result = await startTask({ description: "Test" });
+ *   const result = await startChange({ description: "Test" });
  *   expect(result.changeId).toBeDefined();
  * });
  * ```
