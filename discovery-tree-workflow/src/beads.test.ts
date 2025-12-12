@@ -1,5 +1,5 @@
 /**
- * Tests for beads API - designed through wishful thinking
+ * Tests for database API - designed through wishful thinking
  */
 
 import { describe, test, expect } from "bun:test";
@@ -10,7 +10,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 
-describe("beads API", () => {
+describe("database API", () => {
   describe("createTask", () => {
     describe("when workspace has git repository", () => {
       describe("when BD is initialized", () => {

@@ -1,9 +1,12 @@
 /**
- * Database TypeScript API
+ * Discovery Tree TypeScript API
  *
- * Simple TypeScript wrapper around bd CLI commands.
+ * Unified entry point for database operations, Shortcut integration, and jj bookmark helpers.
+ * This file contains the complete API surface - types, documentation, and function signatures.
+ * Agents can read this ONE file and have ALL information needed to use the API.
  */
 
+// Import implementations
 import {
   setWorkspaceImpl,
   createTaskImpl,
@@ -18,8 +21,13 @@ import {
   appendNotesImpl,
 } from "./beads-impl.js";
 
+import { setShortcutClientImpl, getShortcutStoryImpl } from "./shortcut-impl.js";
+import * as jj from '../../using-jj/src/jj.js';
+
 /**
- * Type definitions
+ * ============================================================================
+ * DATABASE API - Type Definitions
+ * ============================================================================
  */
 
 export type TaskType = "bug" | "feature" | "task" | "epic" | "chore";
@@ -105,6 +113,12 @@ export interface AppendNotesInput {
   taskId: string;
   notes: string;
 }
+
+/**
+ * ============================================================================
+ * DATABASE API - Functions
+ * ============================================================================
+ */
 
 /**
  * Set the workspace context for database operations
@@ -252,4 +266,113 @@ export const addDependency = async (input: AddDependencyInput): Promise<void> =>
  */
 export const appendNotes = async (input: AppendNotesInput): Promise<void> => {
   return appendNotesImpl(input);
+};
+
+/**
+ * ============================================================================
+ * SHORTCUT INTEGRATION - Type Definitions
+ * ============================================================================
+ */
+
+export interface ShortcutStory {
+  id: number;
+  name: string;
+  description: string;
+  app_url: string;
+  branch_name: string;
+  state?: string;
+  story_type?: string;
+  [key: string]: any; // Allow other fields
+}
+
+export interface ShortcutClient {
+  callTool(toolName: string, params: any): Promise<any>;
+}
+
+/**
+ * ============================================================================
+ * SHORTCUT INTEGRATION - Functions
+ * ============================================================================
+ */
+
+/**
+ * Set the Shortcut MCP client (for dependency injection)
+ *
+ * @param mcpClient - MCP client instance to use for Shortcut operations
+ */
+export const setShortcutClient = (mcpClient: ShortcutClient): void => {
+  return setShortcutClientImpl(mcpClient);
+};
+
+/**
+ * Get Shortcut story details with branch name
+ *
+ * Fetches story data from Shortcut and includes the git branch name.
+ * Returns structured data that can be used for creating tasks, bookmarks, or reports.
+ *
+ * @param storyId - Shortcut story public ID
+ * @returns Story details including branch name
+ * @throws Error if client not configured or MCP returns invalid data
+ *
+ * @example
+ * ```typescript
+ * const story = await getShortcutStory(93114);
+ * console.log(story.name); // "Add feature X"
+ * console.log(story.branch_name); // "add-feature-x/sc-93114"
+ * ```
+ */
+export const getShortcutStory = async (storyId: number): Promise<ShortcutStory> => {
+  return getShortcutStoryImpl(storyId);
+};
+
+/**
+ * ============================================================================
+ * JJ BOOKMARK HELPER - Type Definitions
+ * ============================================================================
+ */
+
+export interface CreateJjBookmarkInput {
+  branchName: string;
+  repositoryPath: string;
+  description?: string;
+}
+
+/**
+ * ============================================================================
+ * JJ BOOKMARK HELPER - Functions
+ * ============================================================================
+ */
+
+/**
+ * Create a jj bookmark with a branch name
+ *
+ * Sets the jj repository, creates a bookmark at the current revision,
+ * and optionally describes the current change.
+ *
+ * @param input - Configuration with branch name, repository path, and optional description
+ * @returns void
+ * @throws Error if jj operation fails
+ *
+ * @example
+ * ```typescript
+ * await createJjBookmark({
+ *   branchName: 'feature/sc-12345',
+ *   repositoryPath: '/path/to/repo',
+ *   description: 'Working on feature X'
+ * });
+ * ```
+ */
+export const createJjBookmark = async (
+  input: CreateJjBookmarkInput
+): Promise<void> => {
+  // Set repository
+  await jj.setRepository({ repositoryPath: input.repositoryPath });
+
+  // Create bookmark
+  await jj.createBookmark({ name: input.branchName });
+
+  // Optionally describe the change
+  if (input.description) {
+    await jj.describe({ description: input.description });
+  }
 };

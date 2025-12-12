@@ -25,6 +25,7 @@ import {
   describeImpl,
   logImpl,
   showImpl,
+  createBookmarkImpl,
 } from "./jj-impl.js";
 
 /**
@@ -206,4 +207,21 @@ export const log = async (input: LogInput): Promise<LogEntry[]> => {
  */
 export const show = async (input: ShowInput): Promise<ShowResult> => {
   return showImpl(input);
+};
+
+export interface CreateBookmarkInput {
+  name: string;
+  revision?: string;
+}
+
+/**
+ * Create a bookmark at specified revision
+ *
+ * Creates a new bookmark pointing to the given revision (defaults to @).
+ *
+ * @param input - Bookmark configuration with name and optional revision
+ * @throws Error if no repository is set
+ */
+export const createBookmark = async (input: CreateBookmarkInput): Promise<void> => {
+  return createBookmarkImpl(input);
 };

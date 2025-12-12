@@ -50,7 +50,7 @@ Discovery Trees make work visible through hierarchical task breakdown that emerg
 
 ## The Discovery Tree Workflow
 
-**API Location**: This skill includes a ready-to-use TypeScript API in `src/beads.ts`. Import functions relative to the skill directory.
+**API Location**: This skill includes a ready-to-use TypeScript API in `src/discovery-tree.ts` - a unified entry point that consolidates database operations and Shortcut integration.
 
 **TypeScript Execution**: All code examples use top-level await (no async wrapper needed). Single-line imports only.
 
@@ -70,7 +70,7 @@ import {
   findReadyTasks,
   getEpicStatus,
   drawTree
-} from '~/.claude/skills/discovery-tree-workflow/src/beads.js';
+} from '~/.claude/skills/discovery-tree-workflow/src/discovery-tree.js';
 
 // Set workspace context
 await setWorkspace({ workspacePath: '/path/to/project' });

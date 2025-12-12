@@ -1,5 +1,5 @@
 /**
- * Test helpers for beads API tests
+ * Test helpers for database API tests
  */
 
 import { $ } from "bun";

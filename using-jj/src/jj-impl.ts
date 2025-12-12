@@ -365,3 +365,18 @@ export const showImpl = async (input: ShowInput): Promise<ShowResult> => {
     diff: diff,
   };
 };
+
+/**
+ * Implementation for createBookmark
+ * @internal
+ */
+export const createBookmarkImpl = async (input: { name: string; revision?: string }): Promise<void> => {
+  if (!currentRepoPath) {
+    throw new Error("No repository set - call setRepository first");
+  }
+
+  const revision = input.revision || "@";
+
+  // Create bookmark at specified revision
+  await $`jj bookmark create ${input.name} -r ${revision} --repository ${currentRepoPath}`.quiet();
+};

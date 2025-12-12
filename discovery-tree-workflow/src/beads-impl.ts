@@ -1,5 +1,5 @@
 /**
- * Private implementation details for beads API
+ * Private implementation details for database API
  */
 
 import { $ } from "bun";

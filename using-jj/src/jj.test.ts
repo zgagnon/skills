@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { setRepository, getChangedFiles, getContext, cleanup, startChange, checkpoint, finishChange, describe as describeChange, log, show } from "./jj.js";
+import { setRepository, getChangedFiles, getContext, cleanup, startChange, checkpoint, finishChange, describe as describeChange, log, show, createBookmark } from "./jj.js";
 import { withJJ } from "./test-helpers.js";
 import { resolve } from "node:path";
 import { mkdirSync, rmSync } from "fs";
@@ -468,6 +468,27 @@ describe("show", () => {
         expect(result.changeId).toBeDefined();
         expect(result.description).toBe("Test change");
         expect(result.diff).toContain("test-file.txt");
+      });
+    });
+  });
+});
+
+describe("createBookmark", () => {
+  describe("when repository is set", () => {
+    test("creates bookmark at current revision", async () => {
+      await withJJ(async (repoPath) => {
+        // GIVEN: Repository is set
+        // (withJJ already calls setRepository)
+
+        // WHEN: Create bookmark
+        await createBookmark({ name: "test-bookmark" });
+
+        // THEN: Bookmark exists using jj CLI
+        const bookmarks = execSync(
+          `jj bookmark list --repository "${repoPath}"`,
+          { encoding: "utf8" }
+        );
+        expect(bookmarks).toContain("test-bookmark");
       });
     });
   });

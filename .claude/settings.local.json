@@ -2,14 +2,8 @@
   "permissions": {
     "allow": [
       "mcp__plugin_beads_beads__set_context",
-      "Bash(bd create:*)",
-      "Bash(bd show:*)",
-      "Bash(bd update:*)",
       "Skill(incremental-tdd)",
-      "Bash(bun test:*)",
       "Skill(adr-review)",
-      "Bash(bd list:*)",
-      "Bash(timeout 10 bun test:*)",
       "Skill(sharpening-the-knife)",
       "Skill(superpowers:writing-skills)",
       "Skill(superpowers:jj-change-workflow)",
@@ -18,18 +12,25 @@
       "Bash(jj new:*)",
       "Bash(jj commit:*)",
       "Bash(jj log:*)",
-      "Bash(bun:*)",
       "Skill(using-jj)",
-      "Bash(bd dep:*)",
       "Bash(jj diff:*)",
       "Read(//Users/zell/.emacs.d/.local/**)",
       "Read(//Users/zell/.claude/plugins/marketplaces/superpowers-dev/skills/jj-change-workflow/**)",
-      "Bash(bd ready:*)",
       "Skill(wishful-thinking-programming)",
-      "Bash(bd epic:*)",
-      "Skill(discovery-tree-workflow)"
+      "Skill(discovery-tree-workflow)",
+      "mcp__run-typescript-skills__run-skill-code",
+      "Bash(bun test:*)",
+      "WebSearch",
+      "WebFetch(domain:developers.miro.com)",
+      "Skill(writing-skills)",
+      "WebFetch(domain:community.miro.com)",
+      "WebFetch(domain:developers.notion.com)",
+      "Skill(superpowers:brainstorming)",
+      "Bash(ls:*)",
+      "Bash(bun add:*)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "outputStyle": "Skills Aware"
 }
